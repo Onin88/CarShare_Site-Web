@@ -13,5 +13,4 @@ The front-end is a website made with VueJS, TailwindCSS and JavaScript.
 For more information, see the [Front-end README](./src/frontend/README.md).
 
 ## ScreenShots
-
-![](https://raw.githubusercontent.com/Onin88/CarShare_Site-Web/Screenshots/Menu_Connexio.png)
+![](https://raw.githubusercontent.com/Onin88/CarShare_Site-Web/master/Screenshots/Menu_Connexion.png)
