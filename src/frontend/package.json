@@ -1,0 +1,22 @@
+{
+    "name": "frontend",
+    "version": "1.0.0",
+    "scripts": {
+        "dev": "vite --host --port=80",
+        "build": "vite build && cp -r public/* dist/",
+        "preview": "vite preview --host"
+    },
+    "dependencies": {
+        "@heroicons/vue": "^2.0.14",
+        "vite": "^2.9.18",
+        "vue": "^3.2.47",
+        "vue-router": "^4.1.6"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-vue": "^2.0.0",
+        "eslint": "^8.36.0",
+        "eslint-plugin-vue": "^9.9.0",
+        "postcss": "^8.4.31",
+        "tailwindcss": "^3.2.6"
+    }
+}

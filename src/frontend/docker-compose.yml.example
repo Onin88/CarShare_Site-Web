@@ -1,0 +1,9 @@
+name: carshare-frontend
+services:
+  web:
+    build: .
+    restart: always
+    ports:
+      - 8080:8080
+    volumes:
+      - ./dist:/app/dist

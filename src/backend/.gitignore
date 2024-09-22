@@ -1,0 +1,9 @@
+/node_modules/
+.env
+docker-compose.yml
+mail.config.json
+/.idea/
+/dist/
+db/
+/docs/out/
+*.log

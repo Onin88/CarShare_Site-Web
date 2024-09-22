@@ -1,0 +1,3284 @@
+openapi: 3.0.3
+info:
+  title: Car Share API
+  description: This is the API for the Car Share project.
+  version: 1.0.0
+  contact:
+    name: Car Share, backend team
+    email: 'contoux1u@etu.univ-lorraine.fr'
+  license:
+    name: GNU General Public License v3.0
+    url: 'https://www.gnu.org/licenses/gpl-3.0.en.html'
+servers:
+  - url: 'https://carshare.api.antoinectx.fr'
+    description: Antoine's server
+  - url: 'https://carshare.apis.furwaz.fr'
+    description: Paul's server
+tags:
+  - name: Users
+    description: Operations about users
+  - name: Settings
+    description: Operations about settings
+  - name: Notifications
+    description: Operations about notifications
+  - name: Travels
+    description: Operations about travels
+  - name: Bookings
+    description: Operations about bookings
+  - name: Groups
+    description: Operations about groups
+  - name: Notations
+    description: Operations about notations
+  - name: Docs
+    description: Operations about docs
+  - name: Admin
+    description: Aggregation of administrator-only routes
+paths:
+  /users/signup:
+    post:
+      summary: Sign up
+      description: Create a new user
+      operationId: signup
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: john@example.com
+                password:
+                  type: string
+                  example: Password123$
+                firstName:
+                  type: string
+                  example: John
+                lastName:
+                  type: string
+                  example: Doe
+                phone:
+                  type: string
+                  example: "+330612345678"
+                gender:
+                  type: integer
+                  required: false
+                  default: -1
+                  enum:
+                    - -1
+                    - 0
+                    - 1
+                hasCar:
+                  type: boolean
+                  required: false
+                  default: false
+                timezone:
+                  type: string
+                  required: false
+                  default: null
+                  example: Europe/Paris
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User created
+                  user:
+                    $ref: '#/components/schemas/PrivateUser'
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password is required.
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /users/login:
+    post:
+      summary: Login
+      description: Login to the API
+      operationId: login
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: john@example.com
+                password:
+                  type: string
+                  example: Password123$
+      responses:
+        '200':
+          description: User logged in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User logged in
+                  userId:
+                    type: integer
+                    example: 1
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password is required.
+        '401':
+          $ref: '#/components/responses/invalidCredentials'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /users/me:
+    get:
+      summary: Get current user
+      description: Get the current user
+      operationId: getMe
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: The current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateUser'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+    delete:
+      summary: Delete current user
+      description: Delete the current user
+      operationId: deleteMe
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: Password123$
+      responses:
+        '200':
+          description: User deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User deleted
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password is required.
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+    patch:
+      summary: Update current user
+      description: Update the current user
+      operationId: updateMe
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        description: The user to update
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  required: false
+                  example: john@example.com
+                firstName:
+                  type: string
+                  required: false
+                  example: John
+                lastName:
+                  type: string
+                  required: false
+                  example: Doe
+                phone:
+                  type: string
+                  required: false
+                  example: 0123456789
+                gender:
+                  type: integer
+                  required: false
+                  example: 1
+                hasCar:
+                  type: boolean
+                  required: false
+                  example: true
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: User updated
+                      user:
+                        $ref: '#/components/schemas/PrivateUser'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Field "hasCar" must be a boolean.
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /users/me/password:
+    patch:
+      summary: Update password
+      description: Update the current user's password
+      operationId: updateMyPassword
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: New_Password123
+                oldPassword:
+                  type: string
+                  example: Password123$
+      responses:
+        '200':
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password changed
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password is required.
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+
+  /users/password-reset:
+    post:
+      summary: Ask for password reset
+      description: Send an email to reset the password
+      operationId: askForPasswordReset
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: john@example.com
+      responses:
+        '200':
+          description: Email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: If the provided email address matches an account, a password reset email has been sent.
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Email is required.
+        '429':
+          $ref: '#/components/responses/tooManyRequests'
+        '500':
+          $ref: '#/components/responses/internalError'
+    patch:
+      summary: Password reset
+      description: Change the password
+      operationId: resetPassword
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: Password123$
+      responses:
+        '200':
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password changed
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password is required.
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /users/email-verification:
+    post:
+      summary: Ask for email verification
+      description: Send an email to verify the email address
+      operationId: askForEmailVerification
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: A verification link has been sent to your email address.
+        '401':
+          $ref: '#/components/responses/noToken'
+        '429':
+          $ref: '#/components/responses/tooManyRequests'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+    patch:
+      summary: Email verification
+      description: Verify the email address
+      operationId: emailVerification
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Email verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Email address verified
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /users:
+    get:
+      summary: Search users (admin)
+      description: "Search in all users. Only available to admins.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: searchUsers
+      tags:
+        - Users
+        - Admin
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/query'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PrivateUser'
+                  query:
+                    type: string
+                    required: false
+                    example: friends
+                  limit:
+                    type: integer
+                    example: 10
+                  offset:
+                    type: integer
+                    example: 0
+                  next:
+                    type: integer
+                    nullable: true
+                    example: 10
+                  prev:
+                    type: integer
+                    nullable: true
+                    example: 0
+                  total:
+                    type: integer
+                    example: 12
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          $ref: '#/components/responses/insufficientPrivileges'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+  /users/search:
+    get:
+      summary: Search users (public)
+      description: Search in all users. Available to everyone.
+      operationId: searchUsersPublic
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/query'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: A list of minimal information about users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MinimalUser'
+                  query:
+                    type: string
+                    required: false
+                    example: John
+                  limit:
+                    type: integer
+                    example: 10
+                  offset:
+                    type: integer
+                    example: 0
+                  next:
+                    type: integer
+                    nullable: true
+                    example: 10
+                  prev:
+                    type: integer
+                    nullable: true
+                    example: 0
+                  total:
+                    type: integer
+                    example: 12
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /users/:id:
+    delete:
+      summary: Delete a user (admin)
+      description: "Delete a user. Only available to admins.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: deleteUser
+      tags:
+        - Users
+        - Admin
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: The id of the user to delete
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: User deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User deleted
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          $ref: '#/components/responses/insufficientPrivileges'
+        '404':
+          $ref: '#/components/responses/userNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+    patch:
+      summary: Update a user (admin)
+      description: "Update a user. Only available to admins.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: updateUser
+      tags:
+        - Users
+        - Admin
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: The id of the user to update
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        description: The user to update
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  required: false
+                  example: john@example.com
+                firstName:
+                  type: string
+                  required: false
+                  example: John
+                lastName:
+                  type: string
+                  required: false
+                  example: Doe
+                phone:
+                  type: string
+                  required: false
+                  example: 0123456789
+                gender:
+                  type: integer
+                  required: false
+                  example: 1
+                hasCar:
+                  type: boolean
+                  required: false
+                  example: true
+                level:
+                  type: integer
+                  required: false
+                  example: 1
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: User updated
+                      user:
+                        $ref: '#/components/schemas/PrivateUser'
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          $ref: '#/components/responses/insufficientPrivileges'
+        '404':
+          $ref: '#/components/responses/userNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /travels/create:
+    post:
+      summary: Create a travel
+      description: "Create a travel with steps.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: createTravel
+      tags:
+        - Travels
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                maxPassengers:
+                  type: integer
+                  example: 10
+                price:
+                  type: integer
+                  example: 78
+                description:
+                  type: string
+                  example: Voyage non fumeur
+                groupId:
+                  type: integer
+                  nullable: true
+                  example: 1
+                steps:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/StepInput'
+                  example:
+                    - label: 2ter Boulevard Charlemagne 54000 Nancy
+                      city: Nancy
+                      context: 54, Meurthe-et-Moselle, Grand Est
+                      lat: 48.683188
+                      lng: 6.1877
+                      date: 2023-04-16T09:15:36.000Z
+                    - label: 2ter Boulevard Charlemagne 54000 Laxou
+                      city: Laxou
+                      context: 54, Meurthe-et-Moselle, Grand Est
+                      lat: 49.683188
+                      lng: 6.5877
+                      date: 2023-04-16T219:15:36.000Z
+                    - label: 1801 chemin Napoléon 55000 Metz
+                      city: Metz
+                      context: 55, Moselle, Grand Est
+                      lat: 78.683188
+                      lng: 6.1877
+                      date: 2023-04-17T09:15:36.000Z
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Travel created"
+                  travel:
+                    $ref: '#/components/schemas/PublicTravel'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Date is required.
+        '401':
+          $ref: '#/components/responses/noToken'
+        '404':
+          $ref: '#/components/responses/userNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /travels/my:
+    get:
+      summary: My travels
+      description: Get all the trips created by the current user.
+      operationId: getMyTravels
+      tags:
+        - Travels
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - name: type
+          in: path
+          description: string to choose between seeing future and past routes
+          schema:
+            type: string
+            required: false
+            enum:
+              - future
+              - past
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Future travels
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TravelStep'
+                  limit:
+                    type: integer
+                    example: 10
+                  offset:
+                    type: integer
+                    example: 0
+                  next:
+                    type: integer
+                    nullable: true
+                    example: 10
+                  prev:
+                    type: integer
+                    nullable: true
+                    example: 0
+                  total:
+                    type: integer
+                    example: 2
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: The type of travel searched is invalid.
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /travels/my/:id:
+    delete:
+      summary: Cancel my travel
+      description: "Cancel a travel of the current user.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: cancelMyTravel
+      tags:
+        - Travels
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: Travel id
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - name: reason
+          in: query
+          description: Reason for the cancellation
+          schema:
+            type: string
+            example: "I have a problem"
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Travel cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Travel deleted"
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "You are not the driver of this travel."
+        '404':
+          $ref: '#/components/responses/travelNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+    patch:
+      summary: Update my travel
+      description: "Update a travel of the current user. For each step, if no id is provided, a new step will be created.
+      If an id is provided, the step will be updated. If an existing step is not provided, it will be deleted.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: updateMyTravel
+      tags:
+        - Travels
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: Travel id
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - name: reason
+          in: query
+          description: Reason for the update
+          schema:
+            type: string
+            example: One more step
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        description: Travel to update
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                maxPassengers:
+                  type: integer
+                  required: false
+                  example: 10
+                price:
+                  type: integer
+                  required: false
+                  example: 78
+                description:
+                  type: string
+                  required: false
+                  example: Voyage non fumeur
+                steps:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/StepInput'
+      responses:
+        '200':
+          description: Travel updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Travel updated"
+                  travel:
+                    $ref: '#/components/schemas/PublicTravel'
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "You are not the driver of this travel."
+        '404':
+          $ref: '#/components/responses/travelNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /travels/my/:id/end:
+    patch:
+      summary: End my travel
+      description: "End a travel of the current user.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: endMyTravel
+      tags:
+        - Travels
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: Travel id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Travel ended
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Travel ended"
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          $ref: '#/components/responses/notDriver'
+        '404':
+          $ref: '#/components/responses/travelNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /travels/search:
+    get:
+      summary: Search travels
+      description: Get all the travels fitting with the given criteria
+      operationId: searchTravels
+      tags:
+        - Travels
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: date
+          in: query
+          description: "Wanted departure date (at midnight, ex: in UTC+2 = 2023-03-15T22:00:00.000Z)"
+          schema:
+            type: string
+            example: 2023-03-15T22:00:00.000Z
+        - name: time
+          in: query
+          description: "Wanted departure time (only the time, in the format HH:mm, in the user's timezone)
+          For example, if the user is in a timezone UTC+2, and wants to search for a travel starting at 10:00, he should send 10:00, not 08:00."
+          schema:
+            type: string
+            required: false
+            example: 10:00
+        - name: startCity
+          in: query
+          description: Start city
+          schema:
+            type: string
+            example: Nancy
+        - name: startContext
+          in: query
+          description: Start context
+          schema:
+            type: string
+            example: 54, Meurthe-et-Moselle, Grand Est
+        - name: endCity
+          in: query
+          description: End city
+          schema:
+            type: string
+            example: Metz
+        - name: endContext
+          in: query
+          description: End context
+          schema:
+            type: string
+            example: 55, Moselle, Grand Est
+        - name: startLat
+          in: query
+          description: Start latitude
+          schema:
+            type: number
+            example: 48.692054
+        - name: startLng
+          in: query
+          description: Start longitude
+          schema:
+            type: number
+            example: 6.184417
+        - name: endLat
+          in: query
+          description: End latitude
+          schema:
+            type: number
+            example: 49.119309
+        - name: endLng
+          in: query
+          description: End longitude
+          schema:
+            type: number
+            example: 6.175868
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: The travels fitting the given criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TravelSearch'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Date is invalid.
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /travels/:id:
+    get:
+      summary: Get one travel
+      description: Get one trips with the given id
+      operationId: getTravel
+      tags:
+        - Travels
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: query
+          description: Target travel id
+          schema:
+            type: number
+            example: 1
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: The travel with the given id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicTravel'
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '404':
+          $ref: '#/components/responses/travelNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+    patch:
+      summary: Update travel (admin)
+      description: "Update a travel with the given id. Only available to admins.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: updateTravel
+      tags:
+        - Travels
+        - Admin
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: Travel id
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - name: reason
+          in: query
+          description: Reason for the update
+          schema:
+            type: string
+            example: Price changed
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        description: Travel to update
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                maxPassengers:
+                  type: integer
+                  required: false
+                  example: 10
+                price:
+                  type: integer
+                  required: false
+                  example: 78
+                description:
+                  type: string
+                  required: false
+                  example: Voyage non fumeur
+                steps:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/StepInput'
+      responses:
+        '200':
+          description: Travel updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Travel updated"
+                  travel:
+                    $ref: '#/components/schemas/PublicTravel'
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          $ref: '#/components/responses/insufficientPrivileges'
+        '404':
+          $ref: '#/components/responses/travelNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+    delete:
+      summary: Cancel travel (admin)
+      description: "Cancel a travel with the given id. Only available to admins.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: cancelTravel
+      tags:
+        - Travels
+        - Admin
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: Travel id
+          required: true
+          schema:
+            type: integer
+        - name: reason
+          in: query
+          description: Reason for the cancellation
+          schema:
+            type: string
+            example: Conducteur dangereux
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Travel cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Travel cancelled"
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          $ref: '#/components/responses/insufficientPrivileges'
+        '404':
+          $ref: '#/components/responses/travelNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /travels/:id/end:
+    patch:
+      summary: End travel (admin)
+      description: "End a travel with the given id. Only available to admins.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: endTravel
+      tags:
+        - Travels
+        - Admin
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: Travel id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Travel ended
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Travel ended"
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          $ref: '#/components/responses/insufficientPrivileges'
+        '404':
+          $ref: '#/components/responses/travelNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /travels:
+    get:
+      summary: All travels (admin)
+      description: "Get all travels.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: getTravels
+      tags:
+        - Travels
+        - Admin
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: All travels
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Travel'
+                  limit:
+                    type: integer
+                    example: 10
+                  offset:
+                    type: integer
+                    example: 0
+                  next:
+                    type: integer
+                    nullable: true
+                    example: 10
+                  prev:
+                    type: integer
+                    nullable: true
+                    example: 0
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          $ref: '#/components/responses/insufficientPrivileges'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /settings:
+    get:
+      summary: Settings
+      description: Get the settings of the current user
+      operationId: getSettings
+      tags:
+        - Settings
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+    patch:
+      summary: Update settings
+      description: Update the settings of the current user
+      operationId: updateSettings
+      tags:
+        - Settings
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        description: Settings to update
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingsInput'
+      responses:
+        '200':
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Settings saved
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Field "mailNotif" must be a boolean.
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /notifications/my:
+    get:
+      summary: Get the list of notifications
+      description: Get all the notifications of the current user.
+      operationId: getMyNotifications
+      tags:
+        - Notifications
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: A list of the notifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+                  limit:
+                    type: integer
+                    example: 10
+                  offset:
+                    type: integer
+                    example: 0
+                  next:
+                    type: integer
+                    nullable: true
+                    example: 10
+                  prev:
+                    type: integer
+                    nullable: true
+                    example: 0
+                  total:
+                    type: integer
+                    example: 12
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+  /notifications/all:
+    delete:
+      summary: Delete all the notification
+      description: Delete all the notification of the current user
+      operationId: deleteAllNotifications
+      tags:
+        - Notifications
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: All notifications deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Notifications removed
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+  /notifications/:id:
+    delete:
+      summary: Delete one notification
+      description: Delete one notification of the current user with the id in params
+      operationId: deleteOneNotification
+      tags:
+        - Notifications
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: Id of the notification
+          required: true
+          schema:
+            type: integer
+            example: 99
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Notification deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Notification removed
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Notification not found.
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /groups:
+    get:
+      summary: Search groups (admin)
+      description: "Search in all groups. Only available to admins.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: searchGroups
+      tags:
+        - Groups
+        - Admin
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/query'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: A list of the groups
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Group'
+                  query:
+                    type: string
+                    required: false
+                    example: friends
+                  limit:
+                    type: integer
+                    example: 10
+                  offset:
+                    type: integer
+                    example: 0
+                  next:
+                    type: integer
+                    nullable: true
+                    example: 10
+                  prev:
+                    type: integer
+                    nullable: true
+                    example: 0
+                  total:
+                    type: integer
+                    example: 12
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+  /groups/my:
+    post:
+      summary: Create a group
+      description: "Create a group.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: createGroup
+      tags:
+        - Groups
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        description: The group to create
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  required: true
+                  example: My friends
+      responses:
+        '200':
+          description: Group created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Group created
+                  group:
+                    $ref: '#/components/schemas/Group'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Group name is required.
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+    get:
+      summary: Get my groups
+      description: Get my groups.
+      operationId: getMyGroups
+      tags:
+        - Groups
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Groups retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Group'
+                  query:
+                    type: string
+                    required: false
+                    example: friends
+                  limit:
+                    type: integer
+                    example: 10
+                  offset:
+                    type: integer
+                    example: 0
+                  next:
+                    type: integer
+                    nullable: true
+                    example: 10
+                  prev:
+                    type: integer
+                    nullable: true
+                    example: 0
+                  total:
+                    type: integer
+                    example: 12
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+  /groups/:id/member:
+    post:
+      summary: Add a new member
+      description: "Add a new member in a group.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: addUserGroup
+      tags:
+        - Groups
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: The id of the group to which a user is added
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        description: The email of the user to add on the group
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  required: true
+                  example: john@example.com
+      responses:
+        '200':
+          description: User added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User added
+                  group:
+                    $ref: '#/components/schemas/Group'
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          $ref: '#/components/responses/groupNotCreator'
+        '404':
+          $ref: '#/components/responses/groupNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+    delete:
+      summary: Remove a member
+      description: "Remove a member of a group.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: removeUserGroup
+      tags:
+        - Groups
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: The id of the group to which a user is removed
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        description: The email of the user to add on the group
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  required: true
+                  example: john@example.com
+      responses:
+        '200':
+          description: Member removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Member removed
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          $ref: '#/components/responses/groupNotCreator'
+        '404':
+          $ref: '#/components/responses/groupNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+  /groups/:id:
+    delete:
+      summary: Delete a group (admin)
+      description: "Delete a group, with the id in parameter. Only available to admins.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: deleteGroup
+      tags:
+        - Groups
+        - Admin
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: The id of the group to delete
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Group removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Group removed
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          $ref: '#/components/responses/insufficientPrivileges'
+        '404':
+          $ref: '#/components/responses/groupNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+    patch:
+      summary: Update a group (admin)
+      description: "Update a group.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: updateGroup
+      tags:
+        - Groups
+        - Admin
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: groupeId
+          in: path
+          description: The id of the group to update
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                groupName:
+                  type: string
+                  example: Bilboquet
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Group updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Group updated
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          $ref: '#/components/responses/insufficientPrivileges'
+        '404':
+          $ref: '#/components/responses/groupNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+  /groups/my/:id:
+    delete:
+      summary: Delete a group
+      description: "Delete a group created by the user, with the id in parameter.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: deleteMyGroup
+      tags:
+        - Groups
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: The id of the group to delete
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Group removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Group removed
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          $ref: '#/components/responses/groupNotCreator'
+        '404':
+          $ref: '#/components/responses/groupNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+    patch:
+      summary: Update a group
+      description: "Update a group owned by the current user.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: updateMyGroup
+      tags:
+        - Groups
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: groupeId
+          in: path
+          description: The id of the group to update
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                groupName:
+                  type: string
+                  example: Bilboquet
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Group updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Group updated
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          $ref: '#/components/responses/groupNotCreator'
+        '404':
+          $ref: '#/components/responses/groupNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+  /notations/average/:id:
+    get:
+      summary: Obtaining evaluation averages
+      description: Get the averages score when the id was a driver and when it was a passenger
+      operationId: getUserEvaluation
+      tags:
+        - Notations
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: The id of the user to get the averages
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: The averages score
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvalutationUser'
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '404':
+          $ref: '#/components/responses/userNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+  /notations/travels:
+    get:
+      summary: Average for each travel
+      description: Obtain the average score for each user's trip, when they are a driver or a passenger.
+      operationId: getAverageTravel
+      tags:
+        - Notations
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: The average scores for each travel.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvalutationTravel'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+  /notations/my:
+    post:
+      summary: Create an evaluation
+      description: Create an evaluation on a past trip, with a note between 0 and 5.
+      operationId: createEvaluation
+      tags:
+        - Notations
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        description: The evaluation to create
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: integer
+                  required: true
+                  example: 3
+                travelId:
+                  type: integer
+                  required: true
+                  example: 2
+                evaluatedId:
+                  type: integer
+                  required: true
+                  example: 5
+      responses:
+        '201':
+          description: Evaluation created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Evaluation created
+                  group:
+                    $ref: '#/components/schemas/EvaluationCreate'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Field \"note\" is required."
+        '401':
+          $ref: '#/components/responses/noToken'
+        '404':
+          $ref: '#/components/responses/travelNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+  /notations/:id:
+    get:
+      summary: Get an evaluation
+      description: Get the evaluation, with the id in parameter
+      operationId: getEvaluation
+      tags:
+        - Notations
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: The id of the evaluation to get
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: The evaluation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  evaluation:
+                    type: object
+                    nullable: true
+                    properties:
+                      id:
+                        type: integer
+                        example: 2
+                      note:
+                        type: integer
+                        example: 4
+                      travel:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Travel'
+                      evaluator:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PrivateUser'
+                      evaluated:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PrivateUser'
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+    delete:
+      summary: Delete an evaluation
+      description: Delete the evaluation, with the id in parameter
+      operationId: deleteEvaluation
+      tags:
+        - Notations
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: The id of the evaluation to delete
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Evaluation removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Evaluation removed
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '404':
+          $ref: '#/components/responses/evaluationNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+    patch:
+      summary: Edit an evaluation
+      description: Edit the evaluation, with the id in parameter
+      operationId: editEvaluation
+      tags:
+        - Notations
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: The id of the evaluation to edit
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: The note of the evaluation
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: integer
+                  required: true
+                  example: 3
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Evaluation updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Evaluation updated
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '404':
+          $ref: '#/components/responses/evaluationNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+  /bookings/my:
+    post:
+      summary: Create a new booking
+      description: "Create a booking request for the specified travel.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: createBooking
+      tags:
+        - Bookings
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                travelId:
+                  required: true
+                  type: integer
+                  example: 9
+                departureId:
+                  required: true
+                  type: integer
+                  example: 17
+                arrivalId:
+                  required: true
+                  type: integer
+                  example: 18
+      responses:
+        '200':
+          description: Booking created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You have asked to join Paul LOISIL's trip.
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Field \"travelId\" is required."
+        '401':
+          $ref: '#/components/responses/noToken'
+        '404':
+          $ref: '#/components/responses/travelNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+    get:
+      summary: My bookings
+      description: Get all the bookings of the current user.
+      operationId: getMyBookings
+      tags:
+        - Bookings
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Bookings found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Booking'
+                  limit:
+                    type: integer
+                    example: 10
+                  offset:
+                    type: integer
+                    example: 0
+                  next:
+                    type: integer
+                    nullable: true
+                    example: 10
+                  prev:
+                    type: integer
+                    nullable: true
+                    example: 0
+                  total:
+                    type: integer
+                    example: 12
+        '401':
+          $ref: '#/components/responses/noToken'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /bookings/my/:id:
+    delete:
+      summary: Cancel a booking
+      description: Cancel the specified booking of the current user.
+      operationId: cancelMyBooking
+      tags:
+        - Bookings
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: The id of the booking to cancel
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Booking cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Booking cancelled
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You are not the author of this booking.
+        '404':
+          $ref: '#/components/responses/bookingNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /bookings/:id/accept:
+    patch:
+      summary: Accept a booking
+      description: "Accept a booking, with the id in parameter.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: acceptBooking
+      tags:
+        - Bookings
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: The id of the booking to accept
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Booking accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You have just accepted the request of John Doe.
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          $ref: '#/components/responses/notDriver'
+        '404':
+          $ref: '#/components/responses/bookingNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /bookings/:id/reject:
+    patch:
+      summary: Reject a booking
+      description: "Reject a booking, with the id in parameter.
+      <br /><strong>A verified email is required to perform this action.</strong>"
+      operationId: rejectBooking
+      tags:
+        - Bookings
+      parameters:
+        - $ref: '#/components/parameters/Accept-Language'
+        - name: id
+          in: path
+          description: The id of the booking to reject
+          required: true
+          schema:
+            type: integer
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Booking rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You have just rejected the request of John Doe.
+        '400':
+          $ref: '#/components/responses/invalidId'
+        '401':
+          $ref: '#/components/responses/noToken'
+        '403':
+          $ref: '#/components/responses/notDriver'
+        '404':
+          $ref: '#/components/responses/bookingNotFound'
+        '498':
+          $ref: '#/components/responses/invalidToken'
+        '500':
+          $ref: '#/components/responses/internalError'
+
+  /docs:
+    get:
+      summary: Get the documentation
+      description: Get the documentation in html
+      operationId: getDocs
+      tags:
+        - Docs
+      responses:
+        '200':
+          description: Documentation
+          content:
+            text/html:
+              schema:
+                type: string
+  /docs/yaml:
+    get:
+      summary: Get the documentation in yaml
+      description: Get the documentation in yaml
+      operationId: getDocsYaml
+      tags:
+        - Docs
+      responses:
+        '200':
+          description: Documentation in yaml
+          content:
+            text/yaml:
+              schema:
+                type: string
+  /docs/favicon:
+    get:
+      summary: Get the favicon
+      description: Redirect to the favicon of the frontend (specified in the .env file)
+      operationId: getFavicon
+      tags:
+        - Docs
+      responses:
+        '302':
+          description: Redirect to the favicon
+          headers:
+            Location:
+              schema:
+                type: string
+              description: The URL to redirect to
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Environment variable "FRONTEND_LOGO" is not defined.
+
+components:
+  securitySchemes:
+    bearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    # optional, arbitrary value for documentation purposes
+  parameters:
+    Accept-Language:
+      name: Accept-Language
+      in: header
+      description: The language to use in the response message (if any)
+      required: false
+      schema:
+        type: string
+        default: en
+        enum:
+          - en
+          - fr
+    limit:
+      name: limit
+      in: query
+      description: The number of items to return
+      required: false
+      schema:
+        type: integer
+        default: 10
+        minimum: 1
+        maximum: 50
+    offset:
+      name: offset
+      in: query
+      description: The number of items to skip before starting to collect the result set
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    query:
+      name: query
+      in: query
+      description: The query to search for
+      required: false
+      schema:
+        type: string
+        default: ''
+  responses:
+    groupNotCreator:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: You are not the creator of this group.
+    invalidId:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Id is invalid.
+    noToken:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: No token provided.
+    invalidToken:
+      description: Invalid/Expired token
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Invalid token provided.
+    insufficientPrivileges:
+      description: Insufficient privileges
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: You do not have sufficient rights to perform this action.
+    invalidCredentials:
+      description: Invalid credentials
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Invalid credentials provided.
+    notDriver:
+      description: Not a driver
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: You are not the driver of this travel.
+    bookingNotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Booking not found.
+    userNotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: User not found.
+    travelNotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Travel not found.
+    evaluationNotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Evaluation not found.
+
+    groupNotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Group not found.
+    typeError:
+      description: Invalid type of value
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Invalid type of value provided.
+    tooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: An email has already been sent to this address less than 10 minutes ago. Please wait before trying again.
+    internalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: An internal error occurred. If the problem persists, please contact an administrator.
+    notImplemented:
+      description: Not implemented
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: This feature is not yet implemented.
+  schemas:
+    Settings:
+      type: object
+      properties:
+        mailNotif:
+          type: boolean
+          example: true
+        lang:
+          type: string
+          nullable: true
+          example: en
+        timezone:
+          type: string
+          nullable: true
+          example: Europe/Paris
+    SettingsInput:
+      type: object
+      properties:
+        mailNotif:
+          type: boolean
+          required: false
+          example: true
+        lang:
+          type: string
+          nullable: true
+          required: false
+          example: en
+        timezone:
+          type: string
+          nullable: true
+          required: false
+          example: Europe/Paris
+    Booking:
+      type: object
+      properties:
+        passengerId:
+          type: integer
+          example: 1
+        status:
+          type: integer
+          example: 1
+        comment:
+          type: string
+          nullable: true
+          example: I like cats
+        departureId:
+          type: integer
+          example: 1
+        departure:
+          $ref: '#/components/schemas/Step'
+        arrivalId:
+          type: integer
+          example: 2
+        arrival:
+          $ref: '#/components/schemas/Step'
+    TravelSearch:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        maxPassengers:
+          type: integer
+          example: 4
+        price:
+          type: number
+          example: 100
+        description:
+          type: string
+          nullable: true
+          example: No pets allowed
+        status:
+          type: integer
+          example: 1
+        driverId:
+          type: integer
+          example: 1
+        groupId:
+          type: integer
+          nullable: true
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          example: 2020-01-01T00:00:00.000Z
+        driver:
+          $ref: '#/components/schemas/PublicUser'
+        departure:
+          $ref: '#/components/schemas/Step'
+        arrival:
+          $ref: '#/components/schemas/Step'
+        passengers:
+          type: integer
+          example: 2
+          description: The maximum number of passengers between the departure and the arrival
+    Group:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: My friends
+        creatorId:
+          type: integer
+          example: 1
+        creator:
+          $ref: '#/components/schemas/PublicUser'
+        createdAt:
+          type: string
+          format: date-time
+          example: 2020-01-01T00:00:00.000Z
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicUser'
+    MinimalUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          example: john@example.com
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+    PublicUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          example: john@example.com
+        emailVerifiedOn:
+          type: string
+          format: date-time
+          nullable: true
+          default: null
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        phone:
+          type: string
+          example: "+330612345678"
+        avatar:
+          type: string
+          nullable: true
+          default: null
+        gender:
+          type: integer
+          default: -1
+        hasCar:
+          type: boolean
+          default: false
+        level:
+          type: integer
+          default: 0
+        lang:
+          type: string
+          nullable: true
+          default: null
+          example: fr
+        timezone:
+          type: string
+          nullable: true
+          default: null
+          example: Europe/Paris
+    PrivateUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          example: john@example.com
+        emailVerifiedOn:
+          type: string
+          format: date-time
+          nullable: true
+          default: null
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        phone:
+          type: string
+          example: "+330612345678"
+        avatar:
+          type: string
+          nullable: true
+          default: null
+        gender:
+          type: integer
+          default: -1
+        hasCar:
+          type: boolean
+          default: false
+        mailNotif:
+          type: boolean
+          default: false
+        level:
+          type: integer
+          default: 0
+        createdAt:
+          type: string
+          format: date-time
+        locale:
+          type: string
+          nullable: true
+          default: null
+          example: fr
+        timezone:
+          type: string
+          nullable: true
+          default: null
+          example: Europe/Paris
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        userId:
+          type: integer
+        travelId:
+          type: integer
+        senderId:
+          type: integer
+        bookingId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+    Step:
+      type: object
+      properties:
+        id:
+          type: integer
+        label:
+          type: string
+        city:
+          type: string
+        context:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        travelId:
+          type: integer
+        date:
+          type: string
+          format: date-time
+          example: 2020-01-01T00:00:00.000Z
+    StepInput:
+      type: object
+      properties:
+        id:
+          type: integer
+          required: false
+        label:
+          type: string
+        city:
+          type: string
+        context:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        date:
+          type: string
+          format: date-time
+          example: 2020-01-01T00:00:00.000Z
+    EvalutationUser:
+      type: object
+      properties:
+        driver:
+          type: object
+          properties:
+            average:
+              type: object
+              properties:
+                note:
+                  type: number
+                  example: 1.5
+            count:
+              type: object
+              properties:
+                note:
+                  type: number
+                  example: 2
+        passenger:
+          type: object
+          properties:
+            average:
+              type: object
+              properties:
+                note:
+                  type: number
+                  example: null
+            count:
+              type: object
+              properties:
+                note:
+                  type: number
+                  example: 0
+    EvalutationTravel:
+      type: array
+      example:
+        - travelId: 1,
+          average:
+            note: 4
+        - travelId: 2,
+          average:
+            note: 0.75
+    EvaluationCreate:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        note:
+          type: integer
+          example: 4
+        travel:
+          type: array
+          items:
+            $ref: '#/components/schemas/Travel'
+        evaluator:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrivateUser'
+        evaluated:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrivateUser'
+    Travel:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        maxPassengers:
+          type: integer
+          example: 4
+          default: 1
+        price:
+          type: number
+          example: 24.5
+          default: 0
+        description:
+          type: string
+          nullable: true
+          example: "Non-smoking travel"
+        driverId:
+          type: integer
+          example: 1
+        groupId:
+          type: integer
+          nullable: true
+          default: null
+        createdAt:
+          type: string
+          format: date-time
+          example: 2020-01-01T00:00:00.000Z
+    PublicTravel:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        maxPassengers:
+          type: integer
+          example: 4
+          default: 1
+        price:
+          type: number
+          example: 24.5
+          default: 0
+        description:
+          type: string
+          nullable: true
+          example: "Non-smoking travel"
+        driverId:
+          type: integer
+          example: 1
+        driver:
+          $ref: '#/components/schemas/PublicUser'
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/Step'
+        createdAt:
+          type: string
+          format: date-time
+          example: 2020-01-01T00:00:00.000Z
+    TravelStep:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        maxPassengers:
+          type: integer
+          example: 4
+        price:
+          type: number
+          example: 404
+        description:
+          type: string
+          nullable: true
+          example: No pets allowed
+        status:
+          type: integer
+          example: 1
+        driverId:
+          type: integer
+          example: 1
+        groupId:
+          type: integer
+          nullable: true
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          example: 2020-01-01T00:00:00.000Z
+        driver:
+          $ref: '#/components/schemas/PublicUser'
+        departure:
+          $ref: '#/components/schemas/Step'
+        arrival:
+          $ref: '#/components/schemas/Step'
+
