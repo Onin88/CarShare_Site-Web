@@ -14,4 +14,4 @@ For more information, see the [Front-end README](./src/frontend/README.md).
 
 ## ScreenShots
 
-![image](https://github.com/user-attachments/assets/8b6fcac8-abd9-4ce6-9a01-b751d19fbca6)
+![](https://raw.githubusercontent.com/Onin88/CarShare_Site-Web/Screenshots/Menu_Connexio.png)
